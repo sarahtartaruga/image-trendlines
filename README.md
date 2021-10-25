@@ -20,8 +20,8 @@ with
 * `<rank column header>` being a copy of the column header where the  measure after which images are ranked by are held, e.g. the number of retweets
 * `<x axis label>` being one of the following options: **year**, **month**, **week**, **day**
 *  `<y axis label>` being a term describing the measure after which images are ranked, e.g. retweets
-* `<start date>` being the date your plot starts from; please use following format: **dd-mm-YYYY**
-* `<end date>` being the date your plot ends with; please use following format: **dd-mm-YYYY**
+* `<start date>` being the date your plot starts from; please use following format: **YYYY-mm-dd**
+* `<end date>` being the date your plot ends with; please use following format: **YYYY-mm-dd**
 
 
 Example call
@@ -33,8 +33,8 @@ Example call
 '_ - quote_count' 
 'month'
 'quotes'
-'01-01-2017'
-'01-12-2017'`
+'2017-01-01'
+'2017-12-01'`
 
 
 ## Menu-guided start
