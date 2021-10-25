@@ -1,17 +1,21 @@
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import sys
 import csv
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from collections import OrderedDict
+import urllib.request
+import os
+from PIL import Image
 
-# this function calculates from a csv file what is the most trendy image in a given time range for a given measure
-# make a dictionary for each media url with its count
-# get max count and related media url
-
+# y
+trend_image_ranks = []
 # f(x) visual representation
 trend_image_urls = []
-# f(x) value
-trend_image_ranks = []
+# image size
+image_width = 100
 
 
 def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end):
@@ -25,8 +29,6 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     df[col_time_header] = df[col_time_header].apply(
         lambda t: datetime.strptime(t.split('T')[0], '%Y-%m-%d'))
 
-    # TODO:access row correctly; row[index] instead row[key]
-
     # get all rows where date is in between start date and end date
     for index, row in df.iterrows():
         # if date in a row is in between valid range
@@ -39,12 +41,10 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
             # otherwise add rank value
             else:
                 dict_temp[url] = dict_temp[url] + df[col_rank_header][index]
-
     # can optionally also be returned as top-of-lists
     trend_image_url = max(dict_temp, key=dict_temp.get)
     trend_image_url_rank = max(dict_temp.values())
-    print(trend_image_url)
-    print(trend_image_url_rank)
+
     return trend_image_url, trend_image_url_rank
 
 
@@ -67,29 +67,68 @@ def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_
     trend_image_ranks.append(rank)
 
 
-def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir):
+def get_plot_image(path):
+    img = Image.open(path)
+    wpercent = (image_width/float(img.size[0]))
+    image_height = int((float(img.size[1])*float(wpercent)))
+    img = img.resize((image_width, image_height), Image.ANTIALIAS)
+    img.save(path)
+    return OffsetImage(plt.imread(path))
+
+
+def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir):
     print('The plotting is going to start! \nYou are going to plot your images by {a}, ranked after {b}, ranging from {c} until {d}.'.format(
         a=axis_x_label, b=axis_y_label, c=date_start.strftime('%Y-%m-%d'), d=date_end.strftime('%Y-%m-%d')))
     print('By default the results are going to be stored in the directory {i}.'.format(
         i=result_dir))
 
+    # x axis
+    trend_image_time_blocks = []
+    # labels for x axis
+    time_block_labels = []
+    # paths of locally stored images
+    trend_image_local_paths = []
+
     if axis_x_label == 'year':
         dates = pd.date_range(date_start, date_end, freq='y')
+        # get all dates with removed duplicates
+        dates_list = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(OrderedDict.fromkeys(
+            [date_start] + dates_list + [date_end]))
+        time_block_labels = list(map(lambda d: d.strftime('%Y'), all_dates))
         get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end)
 
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
+        # get all dates with removed duplicates
+        dates_list = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(OrderedDict.fromkeys(
+            [date_start] + dates_list + [date_end]))
+        time_block_labels = list(map(lambda d: d.strftime(
+            '%B') + ' ' + d.strftime('%Y'), all_dates))
         get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end)
 
     elif axis_x_label == 'week':
         dates = pd.date_range(date_start, date_end, freq='w')
+        # get all dates with removed duplicates
+        dates_list = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(OrderedDict.fromkeys(
+            [date_start] + dates_list + [date_end]))
+        time_block_labels = list(
+            map(lambda d: 'Week ' + d.strftime('%U') + ' ' + d.strftime('%Y'), all_dates))
         get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end)
 
     elif axis_x_label == 'day':
         dates = pd.date_range(date_start, date_end, freq='d')
+        # get all dates with removed duplicates
+        dates_list = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(OrderedDict.fromkeys(
+            [date_start] + dates_list + [date_end]))
+        time_block_labels = list(
+            map(lambda d: d.strftime('%d.%m.%Y'), all_dates))
         get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end)
 
@@ -97,10 +136,40 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
         print('No valid x label input: needs to be day, week, month or year')
         return
 
+    # get images from urls and save them
+    try:
+        trend_image_local_paths = [urllib.request.urlretrieve(
+            url, image_dir + 'trend_image_time_block_' + str(trend_image_urls.index(url)) + '.jpg')[0] for url in trend_image_urls]
+    except Exception as e:
+        print('Something went wrong with fetching images from urls : ' + str(e))
+
+    # create visual output
+
+    # x values: create as many time blocks as ranks are available: block 0, 1, ... for rank 0, 1, ...
+    trend_image_time_blocks = list(range(0, len(trend_image_ranks)))
+
+    fig, ax = plt.subplots()
+    ax.scatter(trend_image_time_blocks, trend_image_ranks)
+
+    for x0, y0, path in zip(trend_image_time_blocks, trend_image_ranks, trend_image_local_paths):
+        ab = AnnotationBbox(get_plot_image(path), (x0, y0), frameon=False)
+        ax.add_artist(ab)
+
+    fig.savefig('foo.png')
+    plt.close(fig)
+
+    print(trend_image_urls)
+    print(trend_image_ranks)
+    print(trend_image_local_paths)
+
 
 def main():
     args = sys.argv[1:]
     result_dir = 'results/'
+    image_dir = result_dir + 'images/'
+    # create directories to store files
+    os.makedirs(result_dir, exist_ok=True)
+    os.makedirs(image_dir, exist_ok=True)
 
     if len(args) == 0:
         print('Welcome to the image trendlines tool!')
@@ -141,11 +210,11 @@ def main():
         axis_x_label = input(
             'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - month - week - day \n')
         plot(csv_path, col_time_header, col_url_header, col_rank_header,
-             axis_x_label, axis_y_label, date_start, date_end, result_dir)
+             axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir)
 
     elif len(args) == 8:
         plot(args[0], args[1], args[2], args[3],
-             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir)
+             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir)
 
 
 if __name__ == "__main__":
