@@ -154,6 +154,7 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     # size should be minimum 60 x 60
     # room to play with tuning parameters for changing output size
     height_tuning = 0.05
+    # be cautious with tuning width due to thumbnails overlapping; 4 is a good approximation
     width_tuning = 4
     fig_height = max(60, height_tuning * max_rank)
     fig_width = max(60, width_tuning * len(trend_image_ranks))
