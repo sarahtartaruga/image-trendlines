@@ -252,7 +252,7 @@ def main():
         topic = input(
             'What is the topic of your research? This information will be used for the plot header')
         axis_x_label = input(
-            'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - month - week - day \n')
+            'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - quarter year - month - week - day \n')
         plot(csv_path, col_time_header, col_url_header, col_rank_header,
              axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic)
 
