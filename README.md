@@ -1,6 +1,6 @@
-# Image trendline plotter
+# Image trendgrid plotter
 ## About
-This repository provides a way to plot image trendlines visually: the result is a two-dimensional graph image that maps images over time ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
+This repository provides a way to plot image trendgrids visually: the result is a two-dimensional graph image that maps the top x trend images over time ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
 ## Quick start
 Download the source code into a directory of your choice.
 
