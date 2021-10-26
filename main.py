@@ -15,7 +15,7 @@ import math
 trend_image_ranks = []
 # f(x) visual representation
 trend_image_urls = []
-# image size
+# image thumbnail size
 image_width = 200
 
 
@@ -26,7 +26,6 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     # reading csv file
     df = pd.read_csv(csv_path)
 
-    # only keep day in date format
     # CAUTION: needs to be modified for other data format
     df[col_time_header] = df[col_time_header].apply(
         lambda t: datetime.strptime(t.split('T')[0], '%Y-%m-%d'))
@@ -46,13 +45,15 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
                 else:
                     dict_temp[url] = dict_temp[url] + \
                         df[col_rank_header][index]
-    # can optionally also be returned as top-of-lists
-    trend_image_url = max(dict_temp, key=dict_temp.get)
-    trend_image_url_rank = max(dict_temp.values())
-    # print('Trend image found with URL : ' + str(trend_image_url))
-    # print('Trend image has rank ' + str(trend_image_url_rank))
+    # can optionally also be returned as top-of-lists (get top x max. values)
+    if len(dict_temp) > 0:
+        trend_image_url = max(dict_temp, key=dict_temp.get)
+        trend_image_url_rank = max(dict_temp.values())
+        return trend_image_url, trend_image_url_rank
+        # print('Trend image found with URL : ' + str(trend_image_url))
+        # print('Trend image has rank ' + str(trend_image_url_rank))
 
-    return trend_image_url, trend_image_url_rank
+    return '', 0
 
 
 def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end):
@@ -65,13 +66,6 @@ def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_
         trend_image_urls.append(url)
         trend_image_ranks.append(rank)
         start = dates[i]
-    # # set final end date to original end
-    # end = date_end
-    # # if there are no dates in between, get trend image and rank for one range
-    # url, rank = get_trend_image_per_range(
-    #     csv_path, col_time_header, col_url_header, col_rank_header, start, end)
-    # trend_image_urls.append(url)
-    # trend_image_ranks.append(rank)
 
 
 def get_plot_image(path):
@@ -142,9 +136,13 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
                 url, image_dir + fname + '_timeblock_' + str(trend_image_urls.index(url)) + '.jpg')[0])
         except Exception as e:
             print('Something went wrong with fetching images from urls : ' + str(e))
-            trend_image_local_paths.append('no_url_found.jpg')
+            if type(e).__name__ == 'HTTPError':
+                trend_image_local_paths.append('url_forbidden.jpg')
+            else:
+                trend_image_local_paths.append('no_url_found.jpg')
 
-    # create visual output
+    # section below cares about visual output
+    # ----------------------------------------
 
     # x values: create as many time blocks as ranks are available: block 0, 1, ... for rank 0, 1, ...
     trend_image_time_blocks = list(range(0, len(trend_image_ranks)))
@@ -153,10 +151,17 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     print(' LABELS ')
     print(time_block_labels)
 
-    fig, ax = plt.subplots(
-        figsize=(4 * len(trend_image_ranks), 0.18 * max_rank))
+    # size should be minimum 60 x 60
+    # room to play with tuning parameters for changing output size
+    height_tuning = 0.05
+    width_tuning = 4
+    fig_height = max(60, height_tuning * max_rank)
+    fig_width = max(60, width_tuning * len(trend_image_ranks))
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
-    ax.stem(time_block_labels, trend_image_ranks)
+    # OPTIONAL: change plot type here
+    # ax.stem(time_block_labels, trend_image_ranks)
+    ax.plot(time_block_labels, trend_image_ranks)
 
     for x0, y0, path in zip(trend_image_time_blocks, trend_image_ranks,  trend_image_local_paths):
         plot_image = get_plot_image(path)
