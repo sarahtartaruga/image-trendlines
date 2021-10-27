@@ -2,6 +2,25 @@
 ## About
 This repository provides a way to plot image trendlines visually: the result is a two-dimensional graph image (.jpg) that maps images over time ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
 
+## Input
+A csv file with the following data:
+
+* image urls
+* ranking measure per url (e.g. retweets)
+* time stamp per url (e.g. time of being shared in a tweet); preferably keep the time data in the following formats: YYYY-mm-dd, or another valid example would be 2017-12-16T20:23:21.000Z. If time format is different, this can also be changed accordingly in the code instead of your data.
+
+Besides:
+* a topic name which gets included in the title
+* a measure name which gets included on the y-axis and in the title 
+* a choice whether you want to plot your image trendline with a weekly, monthly, quarter monthly, annual distance
+* the path to your csv file
+
+## Output
+The output is a .jpg file which displays the image trendline graph and will be stored in a directory named 'plots'. 
+Further, all retrievable image urls are stored locally on your device in a directory named 'images'.
+
+The output might be extended to include a csv output file that holds the relevant data for reproducing other visual outputs. 
+  
 ## Prerequisites
 
 * Have installed python3
