@@ -7,7 +7,7 @@ A csv file with the following data:
 
 * image urls
 * ranking measure per url (e.g. retweets)
-* time stamp per url (e.g. time of being shared in a tweet); preferably keep the time data in the following formats: YYYY-mm-dd, or another valid example would be 2017-12-16T20:23:21.000Z. If time format is different, this can also be changed accordingly in the code instead of your data.
+* time stamp per url (e.g. time of being shared in a tweet); preferably keep the time data in the following formats: YYYY-mm-dd, or another valid example would be 2017-12-16T20:23:21.000Z. If your time format is different, this can also be changed accordingly in the code instead of your data.
 
 Besides:
 * a topic name which gets included in the title
@@ -35,7 +35,7 @@ Open your terminal and head to the directory:
 
 From there, run the following command:
 
-`python3 main.py <csv file path> <timestamp column header> <url column header> <rank column header> <x axis label> <y axis label> <start date> <end date> topic>`
+`python3 main.py <csv file path> <timestamp column header> <url column header> <rank column header> <x axis label> <y axis label> <start date> <end date> <topic>`
 
 with
 
@@ -76,3 +76,9 @@ From there, run the following command:
 `python3 main.py`
 
 From there, a menu is going to guide you through the choice of arguments.
+
+## Other
+
+Currently there is another tool under development which plots image trendgrids. 
+
+Further, feel free to fork and use this tool for exciting research or just fun. 
