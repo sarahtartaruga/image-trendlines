@@ -53,12 +53,12 @@ with
 Example call
 
 `python3 main.py 
-'/Users/work/Datasets/deepfake/twitter/deepfake_images.csv' 
+'/Users/datasets/deepfake/twitterdata/deepfake_images.csv' 
 '_ - created_at' 
 '_ - entities - media - _ - url' 
-'_ - quote_count' 
+'_ - retweet_count' 
 'month'
-'quotes'
+'retweets'
 '2017-01-01'
 '2017-12-01'
 '#deepfake'`
