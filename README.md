@@ -10,7 +10,7 @@ Open your terminal and head to the directory:
 
 From there, run the following command:
 
-`python3 main.py <csv file path> <timestamp column header> <url column header> <rank column header> <x axis label> <y axis label> <start date> <end date>`
+`python3 main.py <csv file path> <timestamp column header> <url column header> <rank column header> <x axis label> <y axis label> <start date> <end date> topic>`
 
 with
 
@@ -22,6 +22,7 @@ with
 *  `<y axis label>` being a term describing the measure after which images are ranked, e.g. retweets
 * `<start date>` being the date your plot starts from; please use following format: **YYYY-mm-dd**
 * `<end date>` being the date your plot ends with; please use following format: **YYYY-mm-dd**
+* `<topic>` being the name of the topic you analyse 
 
 
 Example call
@@ -34,7 +35,8 @@ Example call
 'month'
 'quotes'
 '2017-01-01'
-'2017-12-01'`
+'2017-12-01'
+'#deepfake'`
 
 
 ## Menu-guided start
