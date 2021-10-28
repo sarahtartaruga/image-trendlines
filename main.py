@@ -63,6 +63,7 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
                 trend_urls.append(trend_image_url)
                 trend_ranks.append(trend_image_url_rank)
                 trend_dates.append(dates_temp[trend_image_url])
+                trend_dates.sort()
             del dict_temp[trend_image_url]
 
         return trend_urls, trend_ranks, trend_dates
@@ -70,7 +71,7 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
         # print('Trend image found with URL : ' + str(trend_image_url))
         # print('Trend image has rank ' + str(trend_image_url_rank))
 
-    return [], [], []
+    return [''], [0], [None]
 
 
 def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x):
@@ -115,9 +116,9 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     if axis_x_label == 'year':
         dates = pd.date_range(date_start, date_end, freq='y')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) + [date_end]
         time_block_labels = list(map(lambda d: d.strftime('%Y'), all_dates))
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(all_dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'quarter year':
@@ -129,12 +130,12 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
             time_block_labels.append('From \n' + date.strftime(
                 '%B') + ' ' + date.strftime('%Y') + ' to \n' + next_date.strftime(
                 '%B') + ' ' + next_date.strftime('%Y'))
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(all_dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) + [date_end]
+        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) 
         time_block_labels = list(map(lambda d: d.strftime(
             '%B') + ' ' + d.strftime('%Y'), all_dates))
         get_trend_images(all_dates, csv_path, col_time_header,
@@ -142,18 +143,18 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     elif axis_x_label == 'week':
         dates = pd.date_range(date_start, date_end, freq='w')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) + [date_end]
         time_block_labels = list(
             map(lambda d: 'Week ' + d.strftime('%U') + ' ' + d.strftime('%Y'), all_dates))
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(all_dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'day':
         dates = pd.date_range(date_start, date_end, freq='d')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates))
+        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) + [date_end]
         time_block_labels = list(
             map(lambda d: d.strftime('%d.%m.%Y'), all_dates))
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(all_dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end, threshold, top_x)
 
     else:
