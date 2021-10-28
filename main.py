@@ -10,6 +10,7 @@ import urllib.request
 import os
 from PIL import Image
 import math
+import numpy as np
 
 # y
 trend_image_ranks = []
@@ -21,7 +22,8 @@ image_width = 200
 
 def get_trend_images_per_range(csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end,  threshold, top_x):
     dict_temp = {}
-    tend_images_with_rank = {}
+    trend_image_urls = []
+    trend_image_url_ranks = []
     print('Get top ' + str(top_x)+' trend image urls per time slot ' +
           date_start.strftime('%Y-%m-%d') + ' to ' + date_end.strftime('%Y-%m-%d'))
     # reading csv file
@@ -48,14 +50,21 @@ def get_trend_images_per_range(csv_path, col_time_header, col_url_header, col_ra
                         df[col_rank_header][index]
     # can optionally also be returned as top-of-lists (get top x max. values)
     if len(dict_temp) > 0:
-        for i in range(0, top_x): 
+        # todo: min. 1 top value?
+        for i in range(0, top_x):
             trend_image_url = max(dict_temp, key=dict_temp.get)
             trend_image_url_rank = max(dict_temp.values())
-            return trend_image_url, trend_image_url_rank
+            # append at least one url; but after that only urls with min. threshold
+            if trend_image_url_rank >= threshold or len(trend_image_urls) == 0:
+                trend_image_urls.append(trend_image_url)
+                trend_image_url_ranks.append(trend_image_url_rank)
+            del dict_temp[trend_image_url]
+
+        return trend_image_urls, trend_image_url_ranks
         # print('Trend image found with URL : ' + str(trend_image_url))
         # print('Trend image has rank ' + str(trend_image_url_rank))
 
-    return '', 0
+    return [], []
 
 
 def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x):
@@ -65,10 +74,10 @@ def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_
         end = dates[i]
         # url, rank = get_trend_image_per_range(
         #     csv_path, col_time_header, col_url_header, col_rank_header, start, end)
-        urls_with_rank = get_trend_images_per_range(
+        urls, ranks = get_trend_images_per_range(
             csv_path, col_time_header, col_url_header, col_rank_header, start, end, threshold, top_x)
-        # trend_image_urls.append(url)
-        # trend_image_ranks.append(rank)
+        trend_image_urls.append(urls)
+        trend_image_ranks.append(ranks)
         start = dates[i]
 
 
@@ -134,30 +143,37 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
         return
 
     # fetch images
-    for url in trend_image_urls:
-        try:
-            trend_image_local_paths.append(urllib.request.urlretrieve(
-                url, image_dir + fname + '_timeblock_' + str(trend_image_urls.index(url)) + '.jpg')[0])
-        except Exception as e:
-            print('Something went wrong with fetching images from urls : ' + str(e))
-            if type(e).__name__ == 'HTTPError':
-                trend_image_local_paths.append('url_forbidden.jpg')
-            else:
-                trend_image_local_paths.append('no_url_found.jpg')
+    for url_batch in trend_image_urls:
+        trend_image_local_path_batch = []
+        # for url in url_batch:
+        for i in range(0, len(url_batch)):
+            url = url_batch[i]
+            try:
+                trend_image_local_path_batch.append(urllib.request.urlretrieve(
+                    url, image_dir + fname + '_timeblock_' + str(trend_image_urls.index(url_batch)) + '_top_' + str(i+1) + '.jpg')[0])
+            except Exception as e:
+                print('Something went wrong with fetching images from urls : ' + str(e))
+                if type(e).__name__ == 'HTTPError':
+                    trend_image_local_path_batch.append('url_forbidden.jpg')
+                else:
+                    trend_image_local_path_batch.append('no_url_found.jpg')
+        trend_image_local_paths.append(trend_image_local_path_batch)
 
     # section below cares about visual output
     # ----------------------------------------
 
     # x values: create as many time blocks as ranks are available: block 0, 1, ... for rank 0, 1, ...
     trend_image_time_blocks = list(range(0, len(trend_image_ranks)))
-    max_rank = max(trend_image_ranks)
+    # max values of a sublist are always the first element per sublist; total max is max of these elements
+    max_ranks = [sublist[0] for sublist in trend_image_ranks]
+    max_rank = max(max_ranks)
     print('MAX RANK : ' + str(max_rank))
-    print(' LABELS ')
-    print(time_block_labels)
+    # print(' LABELS ')
+    # print(time_block_labels)
 
     # size should be minimum 60 x 60
     # room to play with tuning parameters for changing output size
-    height_tuning = 0.05
+    height_tuning = 0.15
     # be cautious with tuning width due to thumbnails overlapping; 4 is a good approximation
     width_tuning = 4
     fig_height = max(60, height_tuning * max_rank)
@@ -166,13 +182,12 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     # OPTIONAL: change plot type here
     # ax.stem(time_block_labels, trend_image_ranks)
-    ax.plot(time_block_labels, trend_image_ranks)
+    ax.plot(time_block_labels, max_ranks)
 
-    for x0, y0, path in zip(trend_image_time_blocks, trend_image_ranks,  trend_image_local_paths):
-        plot_image = get_plot_image(path)
-        if plot_image is not None:
-            ab = AnnotationBbox(get_plot_image(path), (x0, y0), frameon=True)
-            ax.add_artist(ab)
+    # color
+    # z = np.random.rand(max_rank, len(trend_image_time_blocks))
+    # print(z)
+    # ax.pcolor(z)
 
     font1 = {'family': 'serif', 'color': 'black', 'size': 60}
     font2 = {'family': 'serif', 'color': 'darkred', 'size': 30}
@@ -181,15 +196,27 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     ax.tick_params(axis='both', which='major', pad=15)
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
-
     plt.xlabel(axis_x_label, fontdict=font2, loc='right')
     plt.ylabel(axis_y_label, fontdict=font2, loc='top', rotation=0)
     plt.title('Trend images ranked by {rank} related to {topic} per {time} between {start} and {end}'.format(rank=axis_y_label, topic=topic, time=axis_x_label, start=date_start.strftime('%d.%m.%Y'), end=date_end.strftime('%d.%m.%Y')),
               loc='right', fontdict=font1, pad=30)
 
+    for i in range(0, len(time_block_labels)):
+        # use counter to plot images shifted more below than their actual rank (otherwise, issue with overlapping)
+        # ATTENTION: this leads to the trend images after top trend image not being ranked after their actual count
+        counter = 0
+        for x0, y0, path in zip([trend_image_time_blocks[i]] * top_x, trend_image_ranks[i], trend_image_local_paths[i]):
+            plot_image = get_plot_image(path)
+            if plot_image is not None:
+                ab = AnnotationBbox(
+                    plot_image, (x0, y0-counter*20), frameon=True)
+                ax.add_artist(ab)
+            counter += 1
+
     fig.savefig(plot_dir + fname + '.png')
     plt.close(fig)
 
+    print(trend_image_time_blocks)
     print(trend_image_urls)
     print(trend_image_ranks)
     print(trend_image_local_paths)
@@ -245,15 +272,16 @@ def main():
             'What is the topic of your research? This information will be used for the plot header')
         axis_x_label = input(
             'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - month - week - day \n')
-        threshold = input(
-            'Choose a minimum frequency the images must fulfill, e.g. only consider images with minimum 10 retweets:\n')
-        top_x = input('How many ')
+        threshold = int(input(
+            'Choose a minimum frequency the images must fulfill, e.g. only consider images with minimum 10 retweets:\n'))
+        top_x = int(
+            input('How many trend images per time block do you want to plot?'))
         plot(csv_path, col_time_header, col_url_header, col_rank_header,
              axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x)
 
     elif len(args) == 11:
         plot(args[0], args[1], args[2], args[3],
-             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], args[9], args[10])
+             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
 
 
 if __name__ == "__main__":
