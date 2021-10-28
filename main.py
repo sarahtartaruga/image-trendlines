@@ -21,6 +21,8 @@ image_width = 200
 
 def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end):
     dict_temp = {}
+    trend_urls = []
+    trend_ranks = []
     print('Get trend image url per time slot ' +
           date_start.strftime('%Y-%m-%d') + ' to ' + date_end.strftime('%Y-%m-%d'))
     # reading csv file
@@ -49,11 +51,14 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     if len(dict_temp) > 0:
         trend_image_url = max(dict_temp, key=dict_temp.get)
         trend_image_url_rank = max(dict_temp.values())
-        return trend_image_url, trend_image_url_rank
+        trend_urls.append(trend_image_url)
+        trend_ranks.append(trend_image_ranks)
+        
+
         # print('Trend image found with URL : ' + str(trend_image_url))
         # print('Trend image has rank ' + str(trend_image_url_rank))
 
-    return '', 0
+    return trend_urls, trend_ranks
 
 
 def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end):
