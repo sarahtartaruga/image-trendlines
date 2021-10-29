@@ -155,9 +155,10 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
         except Exception as e:
             print('Something went wrong with fetching images from urls : ' + str(e))
             if type(e).__name__ == 'HTTPError':
-                trend_image_local_paths.append('url_forbidden.jpg')
+                trend_image_local_paths.append(
+                    'placeholders/url_forbidden.jpg')
             else:
-                trend_image_local_paths.append('no_url_found.jpg')
+                trend_image_local_paths.append('placeholders/no_url_found.jpg')
 
     # section below cares about visual output
     # ----------------------------------------
