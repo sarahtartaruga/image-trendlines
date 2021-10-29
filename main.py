@@ -125,18 +125,6 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
         get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
-    elif axis_x_label == 'quarter year':
-        dates = pd.date_range(date_start, date_end, freq='q')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) + [date_end]
-        for i in range(1, len(all_dates)):
-            date = all_dates[i-1]
-            next_date = all_dates[i]
-            time_block_labels.append('From \n' + date.strftime(
-                '%B') + ' ' + date.strftime('%Y') + ' to \n' + next_date.strftime(
-                '%B') + ' ' + next_date.strftime('%Y'))
-        get_trend_images(dates, csv_path, col_time_header,
-                         col_url_header, col_rank_header, date_start, date_end)
-
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
         get_trend_images(dates, csv_path, col_time_header,
