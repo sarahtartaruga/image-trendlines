@@ -1,4 +1,4 @@
-# Image trendlines: An image url trendlines plotter 
+# Image trendlines: A tool for plotting image url trends
 ## About
 This repository provides a way to plot the circulation of trending image urls visually: the result is an image showing a two-dimensional graph that maps the top x trending images from urls over time (per week, month, or year) ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
 
