@@ -12,7 +12,7 @@ After having downloaded the dataset with tweets containing your desired hashtag,
 
 You choose to inspect the top 3 trending images per month, whereas you set a minimum retweet count of 10 as a restriction. This means, it might happen that some months won't show an image or some less than 3. By setting the amount of trending images and a threshold, one can retrieve a granular overview over the chronological evolution of user engagement around a topic by looking at its visual content. 
 
-You download our tool to your local device, and follow the instructions below to generate the visual output.
+You download this tool to your local device, and follow the instructions below to generate the visual output.
 
 ## Quick start 
 
@@ -76,7 +76,7 @@ From there, a terminal menu is going to guide you sequentially through the choic
 Sometimes adaptions might be necessary as this repository was designed for a particular Twitter API dataset. 
 In the code, look at `# TO CONFIGURE` to find the relevant points for an easy adaption. 
 
-Typical features that you have to adapt will be the time format as indicated in your csv file for pasing it correctly. Further, you might wish to change the plot type (e.g. to a stem plot) or the general styling (e.g. font, figure size, image size). 
+Typical features that you have to adapt will be the time format as indicated in your csv file for pasing it correctly. Further, you might wish to change the plot type (e.g. to a stem plot) or the general styling (e.g. font, figure size, image size, label names). 
 
 ## Further plans and extensions
 
