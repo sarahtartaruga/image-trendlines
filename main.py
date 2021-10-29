@@ -33,8 +33,10 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     df = pd.read_csv(csv_path)
 
     # CAUTION: needs to be modified for other data format
+    # df[col_time_header] = df[col_time_header].apply(
+    #     lambda t: datetime.strptime(t.split('T')[0], '%Y-%m-%d'))
     df[col_time_header] = df[col_time_header].apply(
-        lambda t: datetime.strptime(t.split('T')[0], '%Y-%m-%d'))
+        lambda t: datetime.strptime(t.split('.')[0], '%Y-%m-%dT%H:%M:%S'))
 
     # get all rows where date is in between start date and end date
     for index, row in df.iterrows():
@@ -58,12 +60,16 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
         for i in range(0, top_x):
             trend_image_url = max(dict_temp, key=dict_temp.get)
             trend_image_url_rank = max(dict_temp.values())
+            trend_date = dates_temp[trend_image_url]
             # append at least one url; but after that only urls with min. threshold
             if trend_image_url_rank >= threshold or len(trend_urls) == 0:
-                trend_urls.append(trend_image_url)
-                trend_ranks.append(trend_image_url_rank)
-                trend_dates.append(dates_temp[trend_image_url])
+                # trend_urls.append(trend_image_url)
+                # trend_ranks.append(trend_image_url_rank)
+                trend_dates.append(trend_date)
                 trend_dates.sort()
+                index_to_insert = trend_dates.index(trend_date)
+                trend_urls.insert(index_to_insert, trend_image_url)
+                trend_ranks.insert(index_to_insert, trend_image_url_rank)
             del dict_temp[trend_image_url]
 
         return trend_urls, trend_ranks, trend_dates
@@ -86,6 +92,8 @@ def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_
         trend_image_ranks = trend_image_ranks + ranks
         trend_image_dates = trend_image_dates + trend_dates
         start = dates[i]
+        if i == len(dates)-1:
+            trend_image_dates = trend_image_dates
 
 
 def get_plot_image(path):
@@ -135,10 +143,10 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
-        all_dates = list(map(lambda d: d.to_pydatetime(), dates)) 
+        all_dates = list(map(lambda d: d.to_pydatetime(), dates))
         time_block_labels = list(map(lambda d: d.strftime(
             '%B') + ' ' + d.strftime('%Y'), all_dates))
-        get_trend_images(all_dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_path, col_time_header,
                          col_url_header, col_rank_header, date_start,  threshold, top_x)
 
     elif axis_x_label == 'week':
@@ -179,15 +187,23 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     # TODO: labels adaption: instead of one month label, label per thumbnail
 
     # x values: create as many time blocks as ranks are available: block 0, 1, ... for rank 0, 1, ...
-    trend_image_time_blocks = list(range(0, len(trend_image_ranks)))
+    trend_image_time_blocks = list(
+        range(0, len(trend_image_ranks)))
     x_labels = []
-    for time in trend_image_time_blocks:
-        x_labels.append(trend_image_dates[time].strftime('%d.%m.%Y'))
+    # for time in trend_image_time_blocks:
+    for date in trend_image_dates:
+        # date_str = date.strftime('%d.%m.%Y')
+        # if date_str in trend_image_dates:
+        x_labels.append(date.strftime('%B\n\n %d/%m/%Y \n%H:%M:%S'))
 
     max_rank = max(trend_image_ranks)
     print('MAX RANK : ' + str(max_rank))
     print(' LABELS ')
-    print(time_block_labels)
+    # print(time_block_labels)
+    print(x_labels)
+
+    print('TIME DISTANCES')
+    print(trend_image_time_blocks)
 
     # size should be minimum 60 x 60
     # room to play with tuning parameters for changing output size
@@ -200,13 +216,15 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     # OPTIONAL: change plot type here
     # ax.stem(time_block_labels, trend_image_ranks)
-    ax.plot(x_labels, trend_image_ranks)
+    # ax.stem(x_labels, trend_image_ranks)
 
     for x0, y0, path in zip(trend_image_time_blocks, trend_image_ranks, trend_image_local_paths):
         plot_image = get_plot_image(path)
         if plot_image is not None:
             ab = AnnotationBbox(get_plot_image(path), (x0, y0), frameon=True)
             ax.add_artist(ab)
+
+    ax.plot(x_labels, trend_image_ranks)
 
     font1 = {'family': 'serif', 'color': 'black', 'size': 60}
     font2 = {'family': 'serif', 'color': 'darkred', 'size': 30}
@@ -218,7 +236,7 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     plt.xlabel(axis_x_label, fontdict=font2, loc='right')
     plt.ylabel(axis_y_label, fontdict=font2, loc='top', rotation=0)
-    plt.title('Trend images ranked by {rank} related to {topic} per {time} between {start} and {end}'.format(rank=axis_y_label, topic=topic, time=axis_x_label, start=date_start.strftime('%d.%m.%Y'), end=date_end.strftime('%d.%m.%Y')),
+    plt.title('Top {top_x} trend images with at least {min} {rank} related to {topic} per {time} from {start} to {end}'.format(top_x=top_x, min=threshold, rank=axis_y_label, topic=topic, time=axis_x_label, start=date_start.strftime('%d.%m.%Y'), end=date_end.strftime('%d.%m.%Y')),
               loc='right', fontdict=font1, pad=30)
 
     fig.savefig(plot_dir + fname + '.png')
@@ -268,13 +286,13 @@ def main():
         print('Thanks! You want to rank your images after {i}.'.format(
             i=axis_y_label))
         date_start = datetime.strptime(input(
-            'From which date on do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
+            'From which date on do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d_%H-%M-%S')
         print('Thanks! Your image trendline will be plotted from the following date: {i}.'.format(
-            i=date_start.strftime('%Y-%m-%d')))
+            i=date_start.strftime('%Y-%m-%d_%H-%M-%S')))
         date_end = datetime.strptime(input(
-            'Until which date do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
+            'Until which date do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d_%H-%M-%S')
         print('Thanks! Your image trendline will be plotted until the following date: {i}.'.format(
-            i=date_end.strftime('%Y-%m-%d')))
+            i=date_end.strftime('%Y-%m-%d_%H-%M-%S')))
         topic = input(
             'What is the topic of your research? This information will be used for the plot header')
         axis_x_label = input(
@@ -288,7 +306,7 @@ def main():
 
     elif len(args) == 11:
         plot(args[0], args[1], args[2], args[3],
-             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
+             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d_%H-%M-%S'), datetime.strptime(args[7], '%Y-%m-%d_%H-%M-%S'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
 
 
 if __name__ == "__main__":
