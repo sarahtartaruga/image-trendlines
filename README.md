@@ -1,6 +1,20 @@
-# Image trendgrid plotter
+# Image url trend plotter 
 ## About
-This repository provides a way to plot image trendgrids visually: the result is a two-dimensional graph image that maps the top x trend images over time ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
+This repository provides a way to plot the circulation of trending image urls visually: the result is an image showing a two-dimensional graph that maps the top x trending images from urls over time (per week, month, or year) ranked after a measure of choice (e.g. number of retweets, image frequency, author popularity, etc.). 
+
+*Example use case:*
+
+You wish to see the images of the most retweeted image urls that occur within tweets that mention a hashtag (e.g. #deepfake) on Twitter. Like this:
+
+![Example use case](https://github.com/sarahtartaruga/image-trendlines/tree/image-trendgrids-horizontal/example.png?raw=true)
+
+After having downloaded the dataset with tweets containing your desired hashtag, you make sure that the time stamp, media url, and the retweet count data are available. 
+
+You choose to inspect the top 3 trending images per month, whereas you set a minimum retweet count of 10 as a restriction. This means, it might happen that some months won't show an image or some less than 3. By setting the amount of trending images and a threshold, one can retrieve a granular overview over the chronological evolution of user engagement around a topic by looking at its visual content. 
+
+## Adaptions
+Sometimes adaptions might be necessary as this repository was designed for a particular Twitter API dataset. 
+In the code, look at '# TO CONFIGURE' to find the relevant points for an easy adaption. 
 ## Quick start
 Download the source code into a directory of your choice.
 
