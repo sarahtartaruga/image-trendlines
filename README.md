@@ -14,8 +14,13 @@ You choose to inspect the top 3 trending images per month, whereas you set a min
 
 ## Adaptions
 Sometimes adaptions might be necessary as this repository was designed for a particular Twitter API dataset. 
-In the code, look at '# TO CONFIGURE' to find the relevant points for an easy adaption. 
-## Quick start
+In the code, look at `# TO CONFIGURE` to find the relevant points for an easy adaption. 
+
+Typical features that you have to adapt will be the time format as indicated in your csv file for pasing it correctly. Further, you might wish to change the plot type (e.g. to a stem plot) or the general styling (e.g. font, figure size, image size). 
+## Quick start 
+
+*For a menu-guided start please see below*
+
 Download the source code into a directory of your choice.
 
 Open your terminal and head to the directory:
