@@ -10,7 +10,8 @@ You wish to see the images of the most retweeted image urls that occur within tw
 
 After having downloaded the dataset with tweets containing your desired hashtag, you make sure that the time stamp, media url, and the retweet count data are available. 
 
-You choose to inspect the top 3 trending images per month, whereas you set a minimum retweet count of 10 as a restriction. This means, it might happen that some months won't show an image or some less than 3. By setting the amount of trending images and a threshold, one can retrieve a granular overview over the chronological evolution of user engagement around a topic by looking at its visual content. 
+You choose to inspect the top 3 trending images per month, whereas you set a minimum retweet count of 10 as a restriction. Per default this tool fetches the most trending image for a time batch of choice - independent of its count. However, it does not fetch more images if they do not pass the threshold. 
+This means, it might happen that some months won't show more than one image. By setting the amount of trending images and a threshold, one can retrieve a granular overview over the chronological evolution of user engagement around a topic by looking at its visual content. 
 
 You download this tool to your local device, and follow the instructions below to generate the visual output.
 
