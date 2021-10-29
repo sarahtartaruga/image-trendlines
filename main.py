@@ -19,7 +19,7 @@ trend_image_urls = []
 # x
 trend_image_dates = []
 # TO CONFIGURE: image thumbnail size
-image_width = 150
+image_width = 300
 
 
 def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end, threshold, top_x):
@@ -232,7 +232,7 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
 
-    plt.xlabel(axis_x_label, fontdict=font2, loc='right')
+    plt.xlabel('date and ' + axis_x_label, fontdict=font2, loc='right',labelpad=30)
     plt.ylabel(axis_y_label, fontdict=font2, loc='top', rotation=0)
     plt.title('Top {top_x} trend image urls with at least {min} {rank} related to {topic} per {time} from {start} to {end}'.format(top_x=top_x, min=threshold, rank=axis_y_label, topic=topic, time=axis_x_label, start=date_start.strftime('%d.%m.%Y'), end=date_end.strftime('%d.%m.%Y')),
               loc='right', fontdict=font1, pad=100)
