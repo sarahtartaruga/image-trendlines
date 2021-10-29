@@ -27,7 +27,6 @@ Open your terminal and head to the directory:
 
 From there, run the following command:
 
-
 `python3 main.py <csv file path> <timestamp column header> <url column header> <rank column header> <x axis label> <y axis label> <start date> <end date> <topic> <threshold> <top x>`
 
 with
@@ -43,7 +42,6 @@ with
 * `<topic>` being the name of the topic you analyse 
 * `<threshold>` being the lower limit for a trend image url in terms of measure, e.g. min. 10 retweets
 * `<top x>` being the maximum number of trending images you want to inspect per time batch, e.g. max. 2 trending images per month
-
 
 *Example call*
 
@@ -77,7 +75,7 @@ From there, a terminal menu is going to guide you sequentially through the choic
 Sometimes adaptions might be necessary as this repository was designed for a particular Twitter API dataset. 
 In the code, look at `# TO CONFIGURE` to find the relevant points for an easy adaption. 
 
-Typical features that you have to adapt will be the time format as indicated in your csv file for pasing it correctly. Further, you might wish to change the plot type (e.g. to a stem plot) or the general styling (e.g. font, figure size, image size, label names). 
+Typical features that you have to adapt will be the time format as indicated in your csv file for parsing it correctly. Further, you might wish to change the plot type (e.g. to a stem plot) or the general styling (e.g. font, figure size, image size, label names). 
 
 ## Further plans and extensions
 
