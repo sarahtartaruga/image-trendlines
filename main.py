@@ -10,12 +10,13 @@ import urllib.request
 import os
 from PIL import Image
 import math
+# TODO: extend tool to plot category images instead of original images; e.g. if image is labeled as porn plot a red image with text 'porn'
 
 # y
 trend_image_ranks = []
 # f(x) visual representation
 trend_image_urls = []
-
+# x
 trend_image_dates = []
 # TO CONFIGURE: image thumbnail size
 image_width = 150
@@ -160,7 +161,8 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     # section below cares about visual output
     # ----------------------------------------
-    
+
+    # refine label styling for date values on x-axis
     x_labels = []
     # for time in trend_image_time_blocks:
     for date in trend_image_dates:
