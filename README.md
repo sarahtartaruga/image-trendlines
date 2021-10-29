@@ -6,7 +6,7 @@ This repository provides a way to plot the circulation of trending image urls vi
 
 You wish to see the images of the most retweeted image urls that occur within tweets that mention a hashtag (e.g. #deepfake) on Twitter. Like this:
 
-![Example use case](https://github.com/sarahtartaruga/image-trendlines/blob/image-trendgrids-horizontal/example.png)
+![Example use case](https://github.com/sarahtartaruga/image-trendlines/blob/master/example.png)
 
 After having downloaded the dataset with tweets containing your desired hashtag, you make sure that the time stamp, media url, and the retweet count data are available. 
 
