@@ -167,12 +167,15 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     x_labels = []
     # for time in trend_image_time_blocks:
     for date in trend_image_dates:
-        date_str = date.strftime('%b %Y\n\n %d/%m/%y \n%H:%M:%S')
-        if date_str in trend_image_dates:
-            print('STRING DOUBLE PRESENT')
-            x_labels.append(date_str + '\n2')
+        if date is not None:
+            date_str = date.strftime('%b %Y\n\n %d/%m/%y \n%H:%M:%S')
+            if date_str in trend_image_dates:
+                print('STRING DOUBLE PRESENT')
+                x_labels.append(date_str + '\n2')
+            else:
+                x_labels.append(date_str)
         else:
-            x_labels.append(date_str)
+            x_labels.append('No date')
 
     max_rank = max(trend_image_ranks)
 
