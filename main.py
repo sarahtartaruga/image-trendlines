@@ -1,15 +1,12 @@
 
-from datetime import date, datetime, timedelta
+from datetime import datetime
 import sys
-import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-from collections import OrderedDict
 import urllib.request
 import os
 from PIL import Image
-import math
 # TODO: extend tool to plot category images instead of original images; e.g. if image is labeled as porn plot a red image with text 'porn'
 
 # y
@@ -232,7 +229,8 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
 
-    plt.xlabel('date and ' + axis_x_label, fontdict=font2, loc='right',labelpad=30)
+    plt.xlabel('date and ' + axis_x_label,
+               fontdict=font2, loc='right', labelpad=30)
     plt.ylabel(axis_y_label, fontdict=font2, loc='top', rotation=0)
     plt.title('Top {top_x} trend image urls with at least {min} {rank} related to {topic} per {time} from {start} to {end}'.format(top_x=top_x, min=threshold, rank=axis_y_label, topic=topic, time=axis_x_label, start=date_start.strftime('%d.%m.%Y'), end=date_end.strftime('%d.%m.%Y')),
               loc='right', fontdict=font1, pad=100)
