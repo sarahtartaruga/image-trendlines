@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import urllib.request
 import os
+import random
 from PIL import Image
 # TODO: extend tool to plot category images instead of original images; e.g. if image is labeled as porn plot a red image with text 'porn'
 
@@ -16,10 +17,10 @@ trend_image_urls = []
 # x
 trend_image_dates = []
 # TO CONFIGURE: image thumbnail size
-image_width = 300
+image_width = 200
 
 
-def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_rank_header, date_start, date_end, threshold, top_x):
+def get_trend_image_per_range(csv_file, col_time_header, col_url_header, col_rank_header, date_start, date_end, threshold, top_x):
     dict_temp = {}
     dates_temp = {}
     trend_urls = []
@@ -28,7 +29,7 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     print('Get trend image url per time slot ' +
           date_start.strftime('%Y-%m-%d') + ' to ' + date_end.strftime('%Y-%m-%d'))
     # reading csv file
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_file)
 
     # TO CONFIGURE
     df[col_time_header] = df[col_time_header].apply(
@@ -76,14 +77,14 @@ def get_trend_image_per_range(csv_path, col_time_header, col_url_header, col_ran
     return [''], [0], [None]
 
 
-def get_trend_images(dates, csv_path, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x):
+def get_trend_images(dates, csv_file, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x):
     global trend_image_urls, trend_image_ranks, trend_image_dates
     # set start date to original start
     start = date_start
     for i in range(0, len(dates)):
         end = dates[i]
         urls, ranks, trend_dates = get_trend_image_per_range(
-            csv_path, col_time_header, col_url_header, col_rank_header, start, end, threshold, top_x)
+            csv_file, col_time_header, col_url_header, col_rank_header, start, end, threshold, top_x)
         trend_image_urls = trend_image_urls + urls
         trend_image_ranks = trend_image_ranks + ranks
         trend_image_dates = trend_image_dates + trend_dates
@@ -102,7 +103,7 @@ def get_plot_image(path):
         return OffsetImage(plt.imread(path))
 
 
-def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x):
+def plot(csv_file, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x):
     print('The plotting is going to start! \nYou are going to plot your images by {a}, ranked after {b}, ranging from {c} until {d}.'.format(
         a=axis_x_label, b=axis_y_label, c=date_start.strftime('%Y-%m-%d'), d=date_end.strftime('%Y-%m-%d')))
     print('By default the results are going to be stored in the directory {i}.'.format(
@@ -114,27 +115,27 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     if axis_x_label == 'year':
         dates = pd.date_range(date_start, date_end, freq='y')
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_file, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'quarter year':
         dates = pd.date_range(date_start, date_end, freq='q')
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_file, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_file, col_time_header,
                          col_url_header, col_rank_header, date_start,  threshold, top_x)
 
     elif axis_x_label == 'week':
         dates = pd.date_range(date_start, date_end, freq='w')
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_file, col_time_header,
                          col_url_header, col_rank_header, date_start, threshold, top_x)
 
     elif axis_x_label == 'day':
         dates = pd.date_range(date_start, date_end, freq='d')
-        get_trend_images(dates, csv_path, col_time_header,
+        get_trend_images(dates, csv_file, col_time_header,
                          col_url_header, col_rank_header, date_start, date_end, threshold, top_x)
 
     else:
@@ -162,13 +163,17 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     # refine label styling for date values on x-axis
     x_labels = []
-    # for time in trend_image_time_blocks:
     for date in trend_image_dates:
         if date is not None:
             date_str = date.strftime('%b %Y\n\n %d/%m/%y \n%H:%M:%S')
-            if date_str in trend_image_dates:
-                print('STRING DOUBLE PRESENT')
-                x_labels.append(date_str + '\n2')
+            # check if date is already present as label
+            # add randomised appendix to differentiate labels
+            if date_str in x_labels:
+                appendix = ''
+                rand_no = random.randint(1, 20)
+                for i in range(0, rand_no):
+                    appendix = appendix + ' '
+                x_labels.append(date_str + '\n' + appendix)
             else:
                 x_labels.append(date_str)
         else:
@@ -176,27 +181,9 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
 
     max_rank = max(trend_image_ranks)
 
-    # UNCOMMENT FOR TESTING AND DEBUGGING
-    # print('MAX RANK : ' + str(max_rank))
-    # print(' LABELS ')
-    # # print(time_block_labels)
-    # print(x_labels)
-    # print('AMOUNT LABELS')
-    # print(len(x_labels))
-
-    # print('TIME DISTANCES')
-    # print(trend_image_time_blocks)
-    # print('AMOUNT TIME POINTS')
-    # print(len(trend_image_time_blocks))
-
-    # print('AMOUNT LOCAL IMAGE PATHS')
-    # print(len(trend_image_local_paths))
-
-    # print('AMOUNT RANKS')
-    # print(len(trend_image_ranks))
-
     # TO CONFIGURE
     # room to play with tuning parameters for changing output size
+    # height_tuning 0.05 for very wide images with width 300;
     height_tuning = 0.05
     # be cautious with tuning width due to thumbnails overlapping; value between 2-4 is a good approximation
     width_tuning = 2 * (image_width / 100)
@@ -236,12 +223,28 @@ def plot(csv_path, col_time_header, col_url_header, col_rank_header, axis_x_labe
               loc='right', fontdict=font1, pad=100)
 
     # TO CONFIGURE: bbox inches remove all whitespace around figure
-    fig.savefig(plot_dir + fname + '.png', bbox_inches='tight')
+    fig.savefig(plot_dir + fname + '.png', bbox_inches='tight', transparent=True)
     plt.close(fig)
 
+    # print('length image urls')
+    # print(len(trend_image_urls))
     print(trend_image_urls)
-    print(trend_image_ranks)
-    print(trend_image_local_paths)
+    print('----------------------')
+
+    # print('length ranks')
+    # print(len(trend_image_ranks))
+    # print(trend_image_ranks)
+    # print('----------------------')
+
+    # print('length local paths')
+    # print(len(trend_image_local_paths))
+    # print(trend_image_local_paths)
+    # print('----------------------')
+
+    # print('length dates')
+    # print(len(trend_image_dates))
+    # print(trend_image_dates)
+    # print('----------------------')
 
 
 def main():
@@ -254,56 +257,56 @@ def main():
     os.makedirs(image_dir, exist_ok=True)
     os.makedirs(plot_dir, exist_ok=True)
 
-    if len(args) == 0:
-        print('Welcome to the image trendlines tool!')
-        while True:
-            csv_path = input(
-                'Please enter the absolute path of the csv file you want to analyse and plot. \n')
-            if csv_path.endswith('.csv'):
-                print('Thanks! The csv path you entered is: {i}.'.format(
-                    i=csv_path))
-                break
-            else:
-                print(
-                    'Something is wrong with your path. The format seems to be invalid for csv files.')
-        col_time_header = input(
-            'Please copy and paste the column header for the column which holds timestamp information. \n')
-        print('Thanks! The timestamp header you entered is: {i}.'.format(
-            i=col_time_header))
-        col_url_header = input(
-            'Please copy and paste the column header for the column which holds image url information. \n')
-        print('Thanks! The url header you entered is: {i}.'.format(
-            i=col_url_header))
-        col_rank_header = input(
-            'Please copy and paste the column header for the column which you want to rank your images after, e.g. retweets. \n')
-        print('Thanks! The rank header you entered is: {i}.'.format(
-            i=col_rank_header))
-        axis_y_label = input(
-            'Please enter a term describing what you rank your images after. \n')
-        print('Thanks! You want to rank your images after {i}.'.format(
-            i=axis_y_label))
-        date_start = datetime.strptime(input(
-            'From which date on do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
-        print('Thanks! Your image trendline will be plotted from the following date: {i}.'.format(
-            i=date_start.strftime('%Y-%m-%d')))
-        date_end = datetime.strptime(input(
-            'Until which date do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
-        print('Thanks! Your image trendline will be plotted until the following date: {i}.'.format(
-            i=date_end.strftime('%Y-%m-%d')))
-        topic = input(
-            'What is the topic of your research? This information will be used for the plot header')
-        axis_x_label = input(
-            'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - month - week - day \n')
-        threshold = int(input(
-            'Choose a minimum frequency the images must fulfill, e.g. only consider images with minimum 10 retweets:\n'))
-        top_x = int(
-            input('How many trend images per time block do you want to plot?'))
-        plot(csv_path, col_time_header, col_url_header, col_rank_header,
-             axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x)
+    # if len(args) == 0:
+    #     print('Welcome to the image trendlines tool!')
+    #     while True:
+    #         csv_path = input(
+    #             'Please enter the absolute path of the csv file you want to analyse and plot. \n')
+    #         if csv_path.endswith('.csv'):
+    #             print('Thanks! The csv path you entered is: {i}.'.format(
+    #                 i=csv_path))
+    #             break
+    #         else:
+    #             print(
+    #                 'Something is wrong with your path. The format seems to be invalid for csv files.')
+    #     col_time_header = input(
+    #         'Please copy and paste the column header for the column which holds timestamp information. \n')
+    #     print('Thanks! The timestamp header you entered is: {i}.'.format(
+    #         i=col_time_header))
+    #     col_url_header = input(
+    #         'Please copy and paste the column header for the column which holds image url information. \n')
+    #     print('Thanks! The url header you entered is: {i}.'.format(
+    #         i=col_url_header))
+    #     col_rank_header = input(
+    #         'Please copy and paste the column header for the column which you want to rank your images after, e.g. retweets. \n')
+    #     print('Thanks! The rank header you entered is: {i}.'.format(
+    #         i=col_rank_header))
+    #     axis_y_label = input(
+    #         'Please enter a term describing what you rank your images after. \n')
+    #     print('Thanks! You want to rank your images after {i}.'.format(
+    #         i=axis_y_label))
+    #     date_start = datetime.strptime(input(
+    #         'From which date on do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
+    #     print('Thanks! Your image trendline will be plotted from the following date: {i}.'.format(
+    #         i=date_start.strftime('%Y-%m-%d')))
+    #     date_end = datetime.strptime(input(
+    #         'Until which date do you wish to plot your trendline? Please indicate the date in following format: DD-MM-YYYY \n'), '%Y-%m-%d')
+    #     print('Thanks! Your image trendline will be plotted until the following date: {i}.'.format(
+    #         i=date_end.strftime('%Y-%m-%d')))
+    #     topic = input(
+    #         'What is the topic of your research? This information will be used for the plot header')
+    #     axis_x_label = input(
+    #         'Finally, choose which time measure to apply for your trendline by typing one of the following options: \n year - month - week - day \n')
+    #     threshold = int(input(
+    #         'Choose a minimum frequency the images must fulfill, e.g. only consider images with minimum 10 retweets:\n'))
+    #     top_x = int(
+    #         input('How many trend images per time block do you want to plot?'))
+    #     plot(csv_file, col_time_header, col_url_header, col_rank_header,
+    #          axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x)
 
-    elif len(args) == 11:
-        plot(args[0], args[1], args[2], args[3],
-             args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
+    # elif len(args) == 11:
+    plot(args[0], args[1], args[2], args[3],
+        args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
 
 
 if __name__ == "__main__":
