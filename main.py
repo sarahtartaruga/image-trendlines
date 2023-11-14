@@ -20,7 +20,7 @@ trend_image_dates = []
 image_width = 200
 
 
-def get_trend_image_per_range(csv_file, col_time_header, col_url_header, col_rank_header, date_start, date_end, threshold, top_x):
+def get_trend_image_per_range(csv_file, col_time_header, col_url_header, col_rank_header, date_start, date_end, threshold, top_x, separator):
     dict_temp = {}
     dates_temp = {}
     trend_urls = []
@@ -29,7 +29,7 @@ def get_trend_image_per_range(csv_file, col_time_header, col_url_header, col_ran
     print('Get trend image url per time slot ' +
           date_start.strftime('%Y-%m-%d') + ' to ' + date_end.strftime('%Y-%m-%d'))
     # reading csv file
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(csv_file, sep=separator)
 
     # TO CONFIGURE
     df[col_time_header] = df[col_time_header].apply(
@@ -77,14 +77,14 @@ def get_trend_image_per_range(csv_file, col_time_header, col_url_header, col_ran
     return [''], [0], [None]
 
 
-def get_trend_images(dates, csv_file, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x):
+def get_trend_images(dates, csv_file, col_time_header, col_url_header, col_rank_header, date_start, threshold, top_x, separator):
     global trend_image_urls, trend_image_ranks, trend_image_dates
     # set start date to original start
     start = date_start
     for i in range(0, len(dates)):
         end = dates[i]
         urls, ranks, trend_dates = get_trend_image_per_range(
-            csv_file, col_time_header, col_url_header, col_rank_header, start, end, threshold, top_x)
+            csv_file, col_time_header, col_url_header, col_rank_header, start, end, threshold, top_x, separator)
         trend_image_urls = trend_image_urls + urls
         trend_image_ranks = trend_image_ranks + ranks
         trend_image_dates = trend_image_dates + trend_dates
@@ -98,12 +98,12 @@ def get_plot_image(path):
         img = Image.open(path).convert('RGB')
         wpercent = (image_width/float(img.size[0]))
         image_height = int((float(img.size[1])*float(wpercent)))
-        img = img.resize((image_width, image_height), Image.ANTIALIAS)
+        img = img.resize((image_width, image_height), Image.LANCZOS)
         img.save(path)
         return OffsetImage(plt.imread(path))
 
 
-def plot(csv_file, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x):
+def plot(csv_file, col_time_header, col_url_header, col_rank_header, axis_x_label, axis_y_label, date_start, date_end, result_dir, image_dir, plot_dir, topic, threshold, top_x, separator):
     print('The plotting is going to start! \nYou are going to plot your images by {a}, ranked after {b}, ranging from {c} until {d}.'.format(
         a=axis_x_label, b=axis_y_label, c=date_start.strftime('%Y-%m-%d'), d=date_end.strftime('%Y-%m-%d')))
     print('By default the results are going to be stored in the directory {i}.'.format(
@@ -116,27 +116,27 @@ def plot(csv_file, col_time_header, col_url_header, col_rank_header, axis_x_labe
     if axis_x_label == 'year':
         dates = pd.date_range(date_start, date_end, freq='y')
         get_trend_images(dates, csv_file, col_time_header,
-                         col_url_header, col_rank_header, date_start, threshold, top_x)
+                         col_url_header, col_rank_header, date_start, threshold, top_x, separator)
 
     elif axis_x_label == 'quarter year':
         dates = pd.date_range(date_start, date_end, freq='q')
         get_trend_images(dates, csv_file, col_time_header,
-                         col_url_header, col_rank_header, date_start, threshold, top_x)
+                         col_url_header, col_rank_header, date_start, threshold, top_x, separator)
 
     elif axis_x_label == 'month':
         dates = pd.date_range(date_start, date_end, freq='m')
         get_trend_images(dates, csv_file, col_time_header,
-                         col_url_header, col_rank_header, date_start,  threshold, top_x)
+                         col_url_header, col_rank_header, date_start,  threshold, top_x, separator)
 
     elif axis_x_label == 'week':
         dates = pd.date_range(date_start, date_end, freq='w')
         get_trend_images(dates, csv_file, col_time_header,
-                         col_url_header, col_rank_header, date_start, threshold, top_x)
+                         col_url_header, col_rank_header, date_start, threshold, top_x, separator)
 
     elif axis_x_label == 'day':
         dates = pd.date_range(date_start, date_end, freq='d')
         get_trend_images(dates, csv_file, col_time_header,
-                         col_url_header, col_rank_header, date_start, date_end, threshold, top_x)
+                         col_url_header, col_rank_header, date_start, date_end, threshold, top_x, separator)
 
     else:
         print('No valid x label input: needs to be day, week, month or year')
@@ -306,7 +306,7 @@ def main():
 
     # elif len(args) == 11:
     plot(args[0], args[1], args[2], args[3],
-        args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]))
+        args[4], args[5], datetime.strptime(args[6], '%Y-%m-%d'), datetime.strptime(args[7], '%Y-%m-%d'), result_dir, image_dir, plot_dir, args[8], int(args[9]), int(args[10]), args[11] if len(args) == 12 else ",")
 
 
 if __name__ == "__main__":
