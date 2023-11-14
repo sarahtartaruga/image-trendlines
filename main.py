@@ -98,7 +98,7 @@ def get_plot_image(path):
         img = Image.open(path).convert('RGB')
         wpercent = (image_width/float(img.size[0]))
         image_height = int((float(img.size[1])*float(wpercent)))
-        img = img.resize((image_width, image_height), Image.ANTIALIAS)
+        img = img.resize((image_width, image_height), Image.LANCZOS)
         img.save(path)
         return OffsetImage(plt.imread(path))
 
